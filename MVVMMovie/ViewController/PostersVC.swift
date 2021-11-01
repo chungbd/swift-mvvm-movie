@@ -10,17 +10,17 @@ import RxCocoa
 import RxSwift
 import Kingfisher
 
-class ViewController: UIViewController {
+class PostersVC: UIViewController {
     private var viewModel:PosterListViewModel!
     private var bag = DisposeBag()
     
-    var coordinator: AppCoordinator?
+    
     
     @IBOutlet weak var posterCollectionView: UICollectionView!
     
-    static func instantiate(viewModel:PosterListViewModel) -> ViewController {
+    static func instantiate(viewModel:PosterListViewModel) -> PostersVC {
         let storyboard = UIStoryboard(name: "Main", bundle: .main)
-        let viewController = storyboard.instantiateInitialViewController() as! ViewController
+        let viewController = storyboard.instantiateInitialViewController() as! PostersVC
         viewController.viewModel = viewModel
         return viewController
     }
@@ -72,26 +72,16 @@ class ViewController: UIViewController {
         posterCollectionView.rx.modelSelected(MoviePoster.self).flatMap {
             self.viewModel.fetchDetailFromService(movieID: $0.imdbID)
         }
-        .subscribe { [weak self] movie in
-            self?.coordinator?.goToDetail(model: movie)
-        }.disposed(by: bag)
+        .debug("modelSelected")
+        .bind(to: viewModel.currentMovie)
+        .disposed(by: bag)
         
-        viewModel.query
+        viewModel.query.skip(1)
             .flatMap { self.viewModel.fetchItemsFromService(query: $0)}
             .debug("viewModel.query")
             .subscribe { self.viewModel.items.onNext($0) }
             .disposed(by: bag)
 
-    }
-    
-    func debugDetail() {
-        viewModel.items.map { $0.first! }.flatMap {
-            self.viewModel.fetchDetailFromService(movieID: $0.imdbID)
-        }
-        .subscribe { [weak self] movie in
-            self?.coordinator?.goToDetail(model: movie)
-        }.disposed(by: bag)
-
-    }
+    }    
 }
 

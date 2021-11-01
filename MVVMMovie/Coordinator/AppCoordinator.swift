@@ -17,8 +17,10 @@ class AppCoordinator {
     }
         
     func start() -> Void {
-        let viewController = ViewController.instantiate(viewModel: PosterListViewModel())
-        viewController.coordinator = self
+        let viewModel = PosterListViewModel(coordinator: self)
+        
+        let viewController = PostersVC.instantiate(viewModel: viewModel)
+        
         navigation = UINavigationController(rootViewController: viewController)
         window.rootViewController = navigation!
         window.makeKeyAndVisible()
